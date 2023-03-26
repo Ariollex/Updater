@@ -24,11 +24,6 @@ if platform.system() == 'Darwin':
 else:
     root_path = os.getcwd()
 
-# Re-creating Update folder
-if os.path.exists(root_path + '/Update'):
-    shutil.rmtree(root_path + '/Update')
-os.mkdir(root_path + '/Update')
-
 if platform.system() == 'Darwin':
     # Some "hack" to request access to the user storage on start
     os.listdir(root_path)
@@ -48,6 +43,9 @@ def remove_old_files(directory):
 
 def download_zip_file():
     text.config(text="Downloading updates...")
+    if os.path.exists(root_path + '/Update'):
+        shutil.rmtree(root_path + '/Update')
+    os.mkdir(root_path + '/Update')
     progress_bar['value'] = 0
     root.update()
     response = requests.get(url, stream=True, timeout=None)
