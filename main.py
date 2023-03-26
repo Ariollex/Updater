@@ -64,6 +64,8 @@ def download_zip_file():
 
 def extract_zip_file():
     text.config(text="Start of the update...")
+    progress_bar['value'] = 0
+    root.update()
     if is_debug:
         print(debug.i(), "Skipping remove old files!")
     else:
