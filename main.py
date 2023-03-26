@@ -62,13 +62,6 @@ def download_zip_file():
     text.config(text="The update has been downloaded")
 
 
-def progress_hook(block_num, block_size, total_size):
-    downloaded = block_num * block_size
-    if total_size > 0:
-        progress_bar["value"] = downloaded / total_size * 100
-        root.update()
-
-
 def extract_zip_file():
     text.config(text="Start of the update...")
     if is_debug:
