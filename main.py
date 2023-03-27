@@ -10,7 +10,7 @@ import sys
 import os
 
 # Version
-version = '1.0.0.1'
+version = '1.0.1.0'
 is_debug = False
 
 # Base path
