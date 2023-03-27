@@ -16,8 +16,8 @@ is_debug = False
 # Base path
 if platform.system() == 'Darwin':
     if getattr(sys, 'frozen', False):
-        root_path = os.path.abspath(sys.executable).replace('.app/Contents/MacOS', '')
-        for _ in range(2):
+        root_path = os.path.abspath(sys.executable)
+        for _ in range(4):
             root_path = root_path[:root_path.rfind('/')]
     else:
         root_path = os.path.dirname(os.path.abspath(__file__))
