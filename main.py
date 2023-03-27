@@ -62,7 +62,10 @@ def download_zip_file():
             count_downloaded_size = count_downloaded_size + block_size
             if total_size > 0:
                 progress_bar['value'] = count_downloaded_size / total_size * 100
-                root.update()
+                if platform.system() == 'Darwin':
+                    root.update_idletasks()
+                else:
+                    root.update()
     text.config(text="The update has been downloaded")
 
 
@@ -79,10 +82,13 @@ def extract_zip_file():
     text.config(text="Updating... Please, wait.")
     if is_debug:
         print(debug.i(), "Unpacking new files...")
-    for i, file in enumerate(files):
+    for i, file in enumerate(files, start=1):
         zip_file.extract(file, path=root_path)
-        progress_bar["value"] = (i + 1) / len(files) * 100
-        root.update()
+        progress_bar["value"] = i / len(files) * 100
+        if platform.system() == 'Darwin':
+            root.update_idletasks()
+        else:
+            root.update()
     zip_file.close()
     if os.path.exists(update_folder_path):
         remove_old_files(update_folder_path)
@@ -112,7 +118,7 @@ if None not in (args.url, args.archive_name):
     progress_bar = ttk.Progressbar(root, orient='horizontal', length=400, mode='determinate')
     progress_bar.pack(side='top', pady=10)
 
-    # Update folder name
+    # "Update" folder name
     update_folder_name = 'Update-' + str(random.randint(1000000, 10000000))
     update_folder_path = root_path + '/' + update_folder_name
 
