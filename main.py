@@ -4,7 +4,6 @@ import platform
 import argparse
 import zipfile
 import requests
-import shutil
 import debug
 import sys
 import os
@@ -44,7 +43,8 @@ def remove_old_files(directory):
 def download_zip_file():
     text.config(text="Downloading updates...")
     if os.path.exists(root_path + '/Update'):
-        shutil.rmtree(root_path + '/Update')
+        remove_old_files(root_path + '/Update')
+        os.rmdir(root_path + '/Update')
     os.mkdir(root_path + '/Update')
     progress_bar['value'] = 0
     root.update()
@@ -80,7 +80,9 @@ def extract_zip_file():
         progress_bar["value"] = (i + 1) / len(files) * 100
         root.update_idletasks()
     zip_file.close()
-    shutil.rmtree(root_path + '/Update')
+    if os.path.exists(root_path + '/Update'):
+        remove_old_files(root_path + '/Update')
+        os.rmdir(root_path + '/Update')
     messagebox.showinfo("Updater", "Update finished.\nPlease restart the program.")
     sys.exit()
 
