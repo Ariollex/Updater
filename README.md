@@ -1,5 +1,5 @@
 # Updater
-## This is a simple Updater for Python programs.
+## This is a simple Updater for various programs.
 This updater will download and unpack the archive previously downloaded by your program and replace all files in the current directory with new ones, except for itself.
 
 ### Supported OS:
@@ -14,7 +14,7 @@ This updater will download and unpack the archive previously downloaded by your 
 ```
 import subprocess
 args = ["./Updater.exe",
-        "--url=YOUR_URL_TO_PROGRAM.ZIP",
+        "--url=URL_TO_PROGRAM",
         "--archive_name=PROGRAM.ZIP"
         ]
 subprocess.Popen(args)

@@ -4,13 +4,12 @@ import platform
 import argparse
 import zipfile
 import requests
-import shutil
 import debug
 import sys
 import os
 
 # Version
-version = '1.0.0.0'
+version = '1.0.0.1'
 is_debug = False
 
 # Base path
@@ -23,11 +22,6 @@ if platform.system() == 'Darwin':
         root_path = os.path.dirname(os.path.abspath(__file__))
 else:
     root_path = os.getcwd()
-
-# Re-creating Update folder
-if os.path.exists(root_path + '/Update'):
-    shutil.rmtree(root_path + '/Update')
-os.mkdir(root_path + '/Update')
 
 if platform.system() == 'Darwin':
     # Some "hack" to request access to the user storage on start
@@ -48,6 +42,10 @@ def remove_old_files(directory):
 
 def download_zip_file():
     text.config(text="Downloading updates...")
+    if os.path.exists(root_path + '/Update'):
+        remove_old_files(root_path + '/Update')
+        os.rmdir(root_path + '/Update')
+    os.mkdir(root_path + '/Update')
     progress_bar['value'] = 0
     root.update()
     response = requests.get(url, stream=True, timeout=None)
@@ -64,15 +62,10 @@ def download_zip_file():
     text.config(text="The update has been downloaded")
 
 
-def progress_hook(block_num, block_size, total_size):
-    downloaded = block_num * block_size
-    if total_size > 0:
-        progress_bar["value"] = downloaded / total_size * 100
-        root.update()
-
-
 def extract_zip_file():
     text.config(text="Start of the update...")
+    progress_bar['value'] = 0
+    root.update()
     if is_debug:
         print(debug.i(), "Skipping remove old files!")
     else:
@@ -87,7 +80,9 @@ def extract_zip_file():
         progress_bar["value"] = (i + 1) / len(files) * 100
         root.update_idletasks()
     zip_file.close()
-    shutil.rmtree(root_path + '/Update')
+    if os.path.exists(root_path + '/Update'):
+        remove_old_files(root_path + '/Update')
+        os.rmdir(root_path + '/Update')
     messagebox.showinfo("Updater", "Update finished.\nPlease restart the program.")
     sys.exit()
 
