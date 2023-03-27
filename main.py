@@ -23,10 +23,6 @@ if platform.system() == 'Darwin':
 else:
     root_path = os.getcwd()
 
-if platform.system() == 'Darwin':
-    # Some "hack" to request access to the user storage on start
-    os.listdir(root_path)
-
 
 def remove_old_files(directory):
     for filename in os.listdir(directory):
@@ -40,11 +36,18 @@ def remove_old_files(directory):
             os.rmdir(file_path)
 
 
-def download_zip_file():
-    text.config(text="Downloading updates...")
+def preparing_for_update():
+    if platform.system() == 'Darwin':
+        # Some "hack" to request access to the user storage on start
+        os.listdir(root_path)
+    # (Re-)creating Update folder
     if os.path.exists(root_path + '/Update'):
         remove_old_files(root_path + '/Update')
         os.rmdir(root_path + '/Update')
+
+
+def download_zip_file():
+    text.config(text="Downloading updates...")
     os.mkdir(root_path + '/Update')
     progress_bar['value'] = 0
     root.update()
@@ -115,6 +118,9 @@ if None not in (args.url, args.archive_name):
     current_file_path = os.path.basename(sys.executable)
     if platform.system() == 'Darwin':
         current_file_path = current_file_path + '.app'
+
+    # Prepare
+    preparing_for_update()
 
     # Download
     download_zip_file()
