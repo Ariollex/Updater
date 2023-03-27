@@ -2,8 +2,9 @@ from tkinter import ttk, messagebox
 import tkinter as tk
 import platform
 import argparse
-import zipfile
 import requests
+import zipfile
+import random
 import debug
 import sys
 import os
@@ -27,7 +28,7 @@ else:
 def remove_old_files(directory):
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if filename == 'Update' or os.path.basename(file_path) == current_file_path:
+        if filename == update_folder_name or os.path.basename(file_path) == current_file_path:
             continue
         elif os.path.isfile(file_path) or os.path.islink(file_path):
             os.unlink(file_path)
@@ -41,21 +42,21 @@ def preparing_for_update():
         # Some "hack" to request access to the user storage on start
         os.listdir(root_path)
     # (Re-)creating Update folder
-    if os.path.exists(root_path + '/Update'):
-        remove_old_files(root_path + '/Update')
-        os.rmdir(root_path + '/Update')
+    if os.path.exists(update_folder_path):
+        remove_old_files(update_folder_path)
+        os.rmdir(update_folder_path)
+    os.mkdir(update_folder_path)
 
 
 def download_zip_file():
     text.config(text="Downloading updates...")
-    os.mkdir(root_path + '/Update')
     progress_bar['value'] = 0
     root.update()
     response = requests.get(url, stream=True, timeout=None)
     total_size = int(response.headers.get("content-length", 0))
     block_size = 1024  # 1 Kb
     count_downloaded_size = 0
-    with open(root_path + '/Update/' + archive_name, "wb") as file:
+    with open(update_folder_path + '/' + archive_name, "wb") as file:
         for data in response.iter_content(block_size):
             file.write(data)
             count_downloaded_size = count_downloaded_size + block_size
@@ -73,7 +74,7 @@ def extract_zip_file():
         print(debug.i(), "Skipping remove old files!")
     else:
         remove_old_files(root_path)
-    zip_file = zipfile.ZipFile(root_path + '/' + zip_file_path)
+    zip_file = zipfile.ZipFile(zip_file_path)
     files = zip_file.namelist()
     text.config(text="Updating... Please, wait.")
     if is_debug:
@@ -83,9 +84,9 @@ def extract_zip_file():
         progress_bar["value"] = (i + 1) / len(files) * 100
         root.update_idletasks()
     zip_file.close()
-    if os.path.exists(root_path + '/Update'):
-        remove_old_files(root_path + '/Update')
-        os.rmdir(root_path + '/Update')
+    if os.path.exists(update_folder_path):
+        remove_old_files(update_folder_path)
+        os.rmdir(update_folder_path)
     messagebox.showinfo("Updater", "Update finished.\nPlease restart the program.")
     sys.exit()
 
@@ -111,8 +112,12 @@ if None not in (args.url, args.archive_name):
     progress_bar = ttk.Progressbar(root, orient='horizontal', length=400, mode='determinate')
     progress_bar.pack(side='top', pady=10)
 
+    # Update folder name
+    update_folder_name = 'Update-' + str(random.randint(1000000, 10000000))
+    update_folder_path = root_path + '/' + update_folder_name
+
     # Path to update archive
-    zip_file_path = 'Update/' + archive_name
+    zip_file_path = update_folder_path + '/' + archive_name
 
     # Current exe path
     current_file_path = os.path.basename(sys.executable)
