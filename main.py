@@ -57,12 +57,12 @@ def download_zip_file():
     block_size = 1024  # 1 Kb
     count_downloaded_size = 0
     with open(update_folder_path + '/' + archive_name, "wb") as file:
-        for data in response.iter_content(block_size):
+        for count, data in enumerate(response.iter_content(block_size), start=1):
             file.write(data)
             count_downloaded_size = count_downloaded_size + block_size
             if total_size > 0:
                 progress_bar['value'] = count_downloaded_size / total_size * 100
-                root.update_idletasks()
+                root.update()
     text.config(text="The update has been downloaded")
 
 
@@ -82,7 +82,7 @@ def extract_zip_file():
     for i, file in enumerate(files):
         zip_file.extract(file, path=root_path)
         progress_bar["value"] = (i + 1) / len(files) * 100
-        root.update_idletasks()
+        root.update()
     zip_file.close()
     if os.path.exists(update_folder_path):
         remove_old_files(update_folder_path)
