@@ -93,6 +93,7 @@ def extract_zip_file():
     if os.path.exists(update_folder_path):
         remove_old_files(update_folder_path)
         os.rmdir(update_folder_path)
+    text.config(text="The update is complete.")
     messagebox.showinfo("Updater", "Update finished.\nPlease restart the program.")
     sys.exit()
 
