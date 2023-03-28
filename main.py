@@ -1,5 +1,6 @@
 from tkinter import ttk, messagebox
 import tkinter as tk
+import subprocess
 import platform
 import argparse
 import requests
@@ -90,11 +91,24 @@ def extract_zip_file():
         else:
             root.update()
     zip_file.close()
+
+
+def finishing_the_update():
     if os.path.exists(update_folder_path):
         remove_old_files(update_folder_path)
         os.rmdir(update_folder_path)
     text.config(text="The update is complete.")
-    messagebox.showinfo("Updater", "Update finished.\nPlease restart the program.")
+    if open_app is not None:
+        if platform.system() == 'Darwin':
+            open_command = ['open', '-a', root_path + '/' + open_app]
+        else:
+            open_command = ['./' + open_app]
+        if is_debug:
+            print(debug.i(), 'Starting ' + open_app + '...')
+        messagebox.showinfo("Updater", "Update finished.\nThe program will be opened automatically.")
+        subprocess.Popen(open_command)
+    else:
+        messagebox.showinfo("Updater", "Update finished.\nPlease restart the program.")
     sys.exit()
 
 
@@ -104,12 +118,16 @@ parser.add_argument('--url', type=str, help='URL for downloading the archive wit
 parser.add_argument('--archive_name', type=str, help='Name of the archive with the update')
 parser.add_argument('--ignore_files', metavar='file', type=str, nargs='+', help='File names that the program will '
                                                                                 'ignore when updating.')
+parser.add_argument('--open', type=str, help='The name of the file needed to open the application after the update. '
+                                             'Note that the file can be located either in the directory where the '
+                                             'Updater is located, or below.')
 args = parser.parse_args()
 
 # Variables
 url = args.url
 archive_name = args.archive_name
 ignore_files = [] + args.ignore_files if args.ignore_files is not None else []
+open_app = args.open
 
 if None not in (args.url, args.archive_name):
     # Creating window
@@ -144,5 +162,8 @@ if None not in (args.url, args.archive_name):
 
     # Update
     extract_zip_file()
+
+    # Finish
+    finishing_the_update()
 
     root.mainloop()

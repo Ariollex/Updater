@@ -14,15 +14,20 @@ This updater will download and unpack the archive previously downloaded by your 
 ```
 import subprocess
 args = ["./Updater.exe",
-        "--url https://example.com/example.zip",
-        "--archive_name example.zip"
+        "--url https://example.com/example_update_archive.zip",
+        "--archive_name example_update_archive.zip"
         ]
 subprocess.Popen(args)
 ```
 
+### Also,
 #### If you want to ignore some files when updating, you can use the --ignore_files argument
 ```
---ignore_files file.txt file.txt
+--ignore_files example_file.txt example_file.txt
+```
+#### If you want to open your app immediately after the update, you can use the --open argument:
+```
+--open example_app.exe
 ```
 
 ### To find out the Updater version, you can use this code in your program:
