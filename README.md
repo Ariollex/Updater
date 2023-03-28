@@ -7,20 +7,26 @@ This updater will download and unpack the archive previously downloaded by your 
 - macOS
 
 ### To use it, you need to specify:
-- url to archive with update
-- archive name
+- url to archive with update (`--url https://example.com/example.zip`)
+- archive name (`--archive_name example.zip`)
 
 ### For example, this code may contain your program:
 ```
 import subprocess
 args = ["./Updater.exe",
-        "--url=URL_TO_PROGRAM",
-        "--archive_name=PROGRAM.ZIP"
+        "--url https://example.com/example.zip",
+        "--archive_name example.zip"
         ]
 subprocess.Popen(args)
 ```
 
-To find out the Updater version, you can use this code in your program:
+#### If you want to ignore some files when updating, you can use the --ignore_files argument
+```
+--ignore_files file.txt file.txt
+```
+
+### To find out the Updater version, you can use this code in your program:
+For Windows:
 ```
 # For Windows
 import win32api

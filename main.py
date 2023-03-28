@@ -28,7 +28,7 @@ else:
 def remove_old_files(directory):
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if filename == update_folder_name or os.path.basename(file_path) == current_file_path:
+        if filename in ignore_files:
             continue
         elif os.path.isfile(file_path) or os.path.islink(file_path):
             os.unlink(file_path)
@@ -101,11 +101,14 @@ def extract_zip_file():
 parser = argparse.ArgumentParser(description='This is a simple Updater for Python programs.')
 parser.add_argument('--url', type=str, help='URL for downloading the archive with the update.')
 parser.add_argument('--archive_name', type=str, help='Name of the archive with the update')
+parser.add_argument('--ignore_files', metavar='file', type=str, nargs='+', help='File names that the program will '
+                                                                                'ignore when updating.')
 args = parser.parse_args()
 
 # Variables
 url = args.url
 archive_name = args.archive_name
+ignore_files = [] + args.ignore_files if args.ignore_files is not None else []
 
 if None not in (args.url, args.archive_name):
     # Creating window
@@ -121,14 +124,16 @@ if None not in (args.url, args.archive_name):
     # "Update" folder name
     update_folder_name = 'Update-' + str(random.randint(1000000, 10000000))
     update_folder_path = root_path + '/' + update_folder_name
+    ignore_files = ignore_files + [update_folder_name]
 
     # Path to update archive
     zip_file_path = update_folder_path + '/' + archive_name
 
-    # Current exe path
-    current_file_path = os.path.basename(sys.executable)
+    # Current executable file name
+    executable_file_name = os.path.basename(sys.executable)
     if platform.system() == 'Darwin':
-        current_file_path = current_file_path + '.app'
+        executable_file_name = executable_file_name + '.app'
+    ignore_files = ignore_files + [executable_file_name]
 
     # Prepare
     preparing_for_update()
