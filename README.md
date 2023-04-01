@@ -1,4 +1,5 @@
-# Updater
+# <img src="https://github.com/Ariollex/Updater/blob/dev/icons/Updater.ico?raw=true" height="28"> Updater
+
 ## This is a simple Updater for various programs.
 This updater will download and unpack the archive previously downloaded by your program and replace all files in the current directory with new ones, except for itself.
 
