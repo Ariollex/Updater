@@ -7,3 +7,6 @@ version_file.txt
 # Build
 /build/
 /dist/
+
+# Update folder
+Update*
