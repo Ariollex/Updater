@@ -35,8 +35,7 @@ def remove_old_files(directory):
         elif os.path.isfile(file_path) or os.path.islink(file_path):
             os.unlink(file_path)
         elif os.path.isdir(file_path):
-            remove_old_files(file_path)
-            os.rmdir(file_path)
+            shutil.rmtree(file_path)
 
 
 def extract_zip_file():
@@ -101,8 +100,7 @@ def preparing_for_update():
         os.listdir(root_path)
     # (Re-)creating Update folder
     if os.path.exists(update_folder_path):
-        remove_old_files(update_folder_path)
-        os.rmdir(update_folder_path)
+        shutil.rmtree(update_folder_path)
     os.mkdir(update_folder_path)
 
 
@@ -144,8 +142,7 @@ def apply_update():
 
 def finishing_the_update():
     if os.path.exists(update_folder_path):
-        remove_old_files(update_folder_path)
-        os.rmdir(update_folder_path)
+        shutil.rmtree(update_folder_path)
     text.config(text="The update is complete.")
     if open_app is not None:
         if platform.system() == 'Darwin':
