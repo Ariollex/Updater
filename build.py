@@ -39,5 +39,8 @@ if platform.system() == 'Darwin':
     dmgbuild.build_dmg(
         filename='dist/' + app_name + '.dmg',
         volume_name=app_name,
-        settings={'files': ['dist/' + app_name + '.app']}
+        settings={
+            'files': ['dist/' + app_name + '.app'],
+            'icon': 'icons/' + app_name + '.icns',
+        }
     )
