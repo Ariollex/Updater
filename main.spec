@@ -19,7 +19,7 @@ a = Analysis(
         ['main.py'],
         pathex=[],
         binaries=[],
-        datas=[('icons/Updater.ico', '.')],
+        datas=[('icons/Updater.ico', 'icons/.')],
         hiddenimports=[],
         hookspath=[],
         hooksconfig={},

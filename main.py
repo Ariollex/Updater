@@ -179,7 +179,8 @@ if None not in (args.url, args.archive_name):
     # Creating window
     root = tk.Tk()
     root.title("Updater")
-    root.iconbitmap(os.path.dirname(os.path.realpath(__file__)) + '/' + 'Updater.ico')
+    if platform.system() == 'Windows':
+        root.iconbitmap(os.path.dirname(os.path.realpath(__file__)) + '/icons/' + 'Updater.ico')
     root.geometry('500x100')
     root.resizable(False, False)
     text = ttk.Label(text="Updating... Please, wait.")
