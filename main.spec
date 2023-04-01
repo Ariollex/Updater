@@ -19,7 +19,7 @@ a = Analysis(
         ['main.py'],
         pathex=[],
         binaries=[],
-        datas=[],
+        datas=[('icons/Updater.ico', '.')],
         hiddenimports=[],
         hookspath=[],
         hooksconfig={},
@@ -53,6 +53,7 @@ exe = EXE(
         target_arch=None,
         codesign_identity=None,
         entitlements_file=None,
+        icon='icons/Updater.ico',
         version='version_file.txt',
     )
 bundle_obj = exe
@@ -72,6 +73,7 @@ if not onefile:
 
 app = BUNDLE(bundle_obj,
         name='Updater.app',
+        icon='icons/Updater.icns',
         bundle_identifier="app.ariollex.updater",
         info_plist={
             'CFBundleShortVersionString': version,
