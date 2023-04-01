@@ -1,3 +1,9 @@
 /venv/
-/Update/
+/.idea/
+
+# Version file
 version_file.txt
+
+# Build
+/build/
+/dist/
