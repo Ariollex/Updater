@@ -5,6 +5,7 @@ import platform
 import argparse
 import requests
 import zipfile
+import shutil
 import random
 import debug
 import sys
@@ -38,6 +39,62 @@ def remove_old_files(directory):
             os.rmdir(file_path)
 
 
+def extract_zip_file():
+    progress_bar['value'] = 0
+    zip_file = zipfile.ZipFile(update_file_path)
+    files = zip_file.namelist()
+    text.config(text="Updating... Please, wait.")
+    for i, file in enumerate(files, start=1):
+        zip_file.extract(file, path=root_path)
+        progress_bar["value"] = i / len(files) * 100
+        if platform.system() == 'Darwin':
+            root.update_idletasks()
+        else:
+            root.update()
+    zip_file.close()
+
+
+def install_from_dmg():
+    text.config(text="Installing updates...")
+    progress_bar['value'] = 0
+    root.update()
+    mount_cmd = ['hdiutil', 'attach', update_file_path, '-nobrowse', '-noverify', '-noautoopen']
+    mount_output = subprocess.check_output(mount_cmd, stderr=subprocess.STDOUT).decode('utf-8')
+    mount_point = update_folder_name
+
+    # Extract the mount point from the output
+    for line in mount_output.split('\n'):
+        if 'Volumes' in line:
+            mount_point = line.split('\t')[-1]
+            break
+    root.update()
+
+    # Copy all files from the mounted volume to the destination directory
+    total_size = sum(os.path.getsize(os.path.join(current_dir, filename)) for current_dir, _, filenames in
+                     os.walk(mount_point) for filename in filenames)
+    copied_size = 0
+    for current_dir, _, filenames in os.walk(mount_point):
+        for filename in filenames:
+            src_file = os.path.join(current_dir, filename)
+            rel_path = os.path.relpath(src_file, mount_point)
+            dst_file = os.path.join(root_path, rel_path)
+
+            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+
+            # Use shutil.copy2() for preserving file metadata
+            shutil.copy2(src_file, dst_file)
+
+            copied_size = copied_size + os.path.getsize(src_file)
+            progress_bar["value"] = copied_size / total_size * 100
+            if platform.system() == 'Darwin':
+                root.update_idletasks()
+            else:
+                root.update()
+
+    # Unmount the .dmg file
+    subprocess.run(['hdiutil', 'detach', mount_point, '-force'])
+
+
 def preparing_for_update():
     if platform.system() == 'Darwin':
         # Some "hack" to request access to the user storage on start
@@ -49,7 +106,7 @@ def preparing_for_update():
     os.mkdir(update_folder_path)
 
 
-def download_zip_file():
+def download_update_file():
     text.config(text="Downloading updates...")
     progress_bar['value'] = 0
     root.update()
@@ -70,27 +127,19 @@ def download_zip_file():
     text.config(text="The update has been downloaded")
 
 
-def extract_zip_file():
+def apply_update():
     text.config(text="Start of the update...")
     progress_bar['value'] = 0
     root.update()
-    if is_debug:
-        print(debug.i(), "Skipping remove old files!")
-    else:
+    # Skip removing files if not compiled
+    if getattr(sys, 'frozen', False):
         remove_old_files(root_path)
-    zip_file = zipfile.ZipFile(zip_file_path)
-    files = zip_file.namelist()
-    text.config(text="Updating... Please, wait.")
-    if is_debug:
-        print(debug.i(), "Unpacking new files...")
-    for i, file in enumerate(files, start=1):
-        zip_file.extract(file, path=root_path)
-        progress_bar["value"] = i / len(files) * 100
-        if platform.system() == 'Darwin':
-            root.update_idletasks()
-        else:
-            root.update()
-    zip_file.close()
+    if update_file_path[update_file_path.rfind(".") + 1:] == 'dmg':
+        # Install from dmg
+        install_from_dmg()
+    else:
+        # Extract zip
+        extract_zip_file()
 
 
 def finishing_the_update():
@@ -146,7 +195,7 @@ if None not in (args.url, args.archive_name):
     ignore_files = ignore_files + [update_folder_name]
 
     # Path to update archive
-    zip_file_path = update_folder_path + '/' + archive_name
+    update_file_path = update_folder_path + '/' + archive_name
 
     # Current executable file name
     executable_file_name = os.path.basename(sys.executable)
@@ -158,10 +207,10 @@ if None not in (args.url, args.archive_name):
     preparing_for_update()
 
     # Download
-    download_zip_file()
+    download_update_file()
 
     # Update
-    extract_zip_file()
+    apply_update()
 
     # Finish
     finishing_the_update()
