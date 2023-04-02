@@ -46,10 +46,7 @@ def extract_zip_file():
     for i, file in enumerate(files, start=1):
         zip_file.extract(file, path=root_path)
         progress_bar["value"] = i / len(files) * 100
-        if platform.system() == 'Darwin':
-            root.update_idletasks()
-        else:
-            root.update()
+        root.update()
     zip_file.close()
 
 
@@ -85,10 +82,7 @@ def install_from_dmg():
 
             copied_size = copied_size + os.path.getsize(src_file)
             progress_bar["value"] = copied_size / total_size * 100
-            if platform.system() == 'Darwin':
-                root.update_idletasks()
-            else:
-                root.update()
+            root.update()
 
     # Unmount the .dmg file
     subprocess.run(['hdiutil', 'detach', mount_point, '-force'])
@@ -110,6 +104,7 @@ def download_update_file():
     root.update()
     response = requests.get(url, stream=True, timeout=None)
     total_size = int(response.headers.get("content-length", 0))
+    update_step = int(str(total_size)[:2])
     block_size = 1024  # 1 Kb
     count_downloaded_size = 0
     with open(update_folder_path + '/' + archive_name, "wb") as file:
@@ -118,9 +113,7 @@ def download_update_file():
             count_downloaded_size = count_downloaded_size + block_size
             if total_size > 0:
                 progress_bar['value'] = count_downloaded_size / total_size * 100
-                if platform.system() == 'Darwin':
-                    root.update_idletasks()
-                else:
+                if count % update_step == 0:
                     root.update()
     text.config(text="The update has been downloaded")
 
