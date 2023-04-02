@@ -17,7 +17,7 @@ if os.path.exists('dist'):
 if platform.system() == 'Windows':
     # Make version file for exe
     pyinstaller_versionfile.create_versionfile(
-        output_file="build_configuration/version_file.txt",
+        output_file="version_file.txt",
         version=version,
         file_description=app_description,
         internal_name=app_name,
