@@ -43,7 +43,7 @@ exe = EXE(
         name='Updater',
         debug=False,
         bootloader_ignore_signals=False,
-        strip=False,
+        strip=True,
         upx=False,
         upx_exclude=[],
         runtime_tmpdir=None,
@@ -64,18 +64,21 @@ if not onefile:
             a.binaries,
             a.zipfiles,
             a.datas,
-            strip=False,
-            upx=True,
+            strip=True,
+            upx=False,
             upx_exclude=[],
             name='Updater',
         )
     bundle_obj = coll
 
-app = BUNDLE(bundle_obj,
+app = BUNDLE(
+        bundle_obj,
         name='Updater.app',
         icon='icons/Updater.icns',
         bundle_identifier="app.ariollex.updater",
         info_plist={
             'CFBundleShortVersionString': version,
+            'NSUseExtendedDynamicRange': False,
+            'NSAppSleepDisabled': False,
         }
     )
