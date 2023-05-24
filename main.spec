@@ -5,10 +5,7 @@ import platform
 #
 # Parameters
 #
-if platform.system() == 'Windows':
-    onefile = True
-else:
-    onefile = False
+onefile = True
 block_cipher = None
 
 
@@ -19,13 +16,13 @@ a = Analysis(
         ['main.py'],
         pathex=[],
         binaries=[],
-        datas=[('icons/Updater.ico', 'icons/.')],
+        datas=[],
         hiddenimports=[],
         hookspath=[],
         hooksconfig={},
         runtime_hooks=[],
         excludes=[],
-        win_no_prefer_redirects=False,
+        win_no_prefer_redirects=True,
         win_private_assemblies=False,
         cipher=block_cipher,
         noarchive=False,
@@ -48,7 +45,7 @@ exe = EXE(
         upx_exclude=[],
         runtime_tmpdir=None,
         console=False,
-        disable_windowed_traceback=False,
+        disable_windowed_traceback=True,
         argv_emulation=False,
         target_arch=None,
         codesign_identity=None,
@@ -57,19 +54,6 @@ exe = EXE(
         version='version_file.txt',
     )
 bundle_obj = exe
-
-if not onefile:
-    coll = COLLECT(
-            exe,
-            a.binaries,
-            a.zipfiles,
-            a.datas,
-            strip=True,
-            upx=False,
-            upx_exclude=[],
-            name='Updater',
-        )
-    bundle_obj = coll
 
 app = BUNDLE(
         bundle_obj,
