@@ -1,15 +1,22 @@
-from tkinter import ttk, messagebox
-import tkinter as tk
-import subprocess
+import sys
+import os
 import platform
+import subprocess
 import argparse
 import requests
 import zipfile
 import shutil
 import random
 import debug
-import sys
-import os
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QLabel,
+    QVBoxLayout,
+    QProgressBar,
+    QMessageBox,
+    QWidget
+)
 
 # Version
 version = '1.0.1.0'
@@ -39,21 +46,21 @@ def remove_old_files(directory):
 
 
 def extract_zip_file():
-    progress_bar['value'] = 0
+    progress_bar.setValue(0)
     zip_file = zipfile.ZipFile(update_file_path)
     files = zip_file.namelist()
-    text.config(text="Updating... Please, wait.")
+    text_label.setText("Updating... Please, wait.")
     for i, file in enumerate(files, start=1):
         zip_file.extract(file, path=root_path)
-        progress_bar["value"] = i / len(files) * 100
-        root.update()
+        progress_bar.setValue(i / len(files) * 100)
+        app.processEvents()
     zip_file.close()
 
 
 def install_from_dmg():
-    text.config(text="Installing updates...")
-    progress_bar['value'] = 0
-    root.update()
+    text_label.setText("Installing updates...")
+    progress_bar.setValue(0)
+    app.processEvents()
     mount_cmd = ['hdiutil', 'attach', update_file_path, '-nobrowse', '-noverify', '-noautoopen']
     mount_output = subprocess.check_output(mount_cmd, stderr=subprocess.STDOUT).decode('utf-8')
     mount_point = update_folder_name
@@ -63,7 +70,7 @@ def install_from_dmg():
         if 'Volumes' in line:
             mount_point = line.split('\t')[-1]
             break
-    root.update()
+    app.processEvents()
 
     # Copy all files from the mounted volume to the destination directory
     total_size = sum(os.path.getsize(os.path.join(current_dir, filename)) for current_dir, _, filenames in
@@ -81,8 +88,11 @@ def install_from_dmg():
             shutil.copy2(src_file, dst_file)
 
             copied_size = copied_size + os.path.getsize(src_file)
-            progress_bar["value"] = copied_size / total_size * 100
-            root.update()
+            progress_bar.setValue(copied_size / total_size * 100)
+            app.processEvents()
+
+    if os.path.exists('.VolumeIcon.icns'):
+        os.remove('.VolumeIcon.icns')
 
     # Unmount the .dmg file
     subprocess.run(['hdiutil', 'detach', mount_point, '-force'])
@@ -99,9 +109,9 @@ def preparing_for_update():
 
 
 def download_update_file():
-    text.config(text="Downloading updates...")
-    progress_bar['value'] = 0
-    root.update()
+    text_label.setText("Downloading updates...")
+    progress_bar.setValue(0)
+    app.processEvents()
     response = requests.get(url, stream=True, timeout=None)
     total_size = int(response.headers.get("content-length", 0))
     update_step = int(str(total_size)[:2])
@@ -112,16 +122,16 @@ def download_update_file():
             file.write(data)
             count_downloaded_size = count_downloaded_size + block_size
             if total_size > 0:
-                progress_bar['value'] = count_downloaded_size / total_size * 100
+                progress_bar.setValue(count_downloaded_size / total_size * 100)
                 if count % update_step == 0:
-                    root.update()
-    text.config(text="The update has been downloaded")
+                    app.processEvents()
+    text_label.setText("The update has been downloaded")
 
 
 def apply_update():
-    text.config(text="Start of the update...")
-    progress_bar['value'] = 0
-    root.update()
+    text_label.setText("Start of the update...")
+    progress_bar.setValue(0)
+    app.processEvents()
     # Skip removing files if not compiled
     if getattr(sys, 'frozen', False):
         remove_old_files(root_path)
@@ -136,7 +146,7 @@ def apply_update():
 def finishing_the_update():
     if os.path.exists(update_folder_path):
         shutil.rmtree(update_folder_path)
-    text.config(text="The update is complete.")
+    text_label.setText("The update is complete.")
     if open_app is not None:
         if platform.system() == 'Darwin':
             open_command = ['open', '-a', root_path + '/' + open_app]
@@ -144,10 +154,18 @@ def finishing_the_update():
             open_command = ['./' + open_app]
         if is_debug:
             print(debug.i(), 'Starting ' + open_app + '...')
-        messagebox.showinfo("Updater", "Update finished.\nThe program will be opened automatically.")
+        QMessageBox.information(
+            QWidget(),
+            "Updater",
+            "Update finished.\nThe program will be opened automatically."
+        )
         subprocess.Popen(open_command)
     else:
-        messagebox.showinfo("Updater", "Update finished.\nPlease restart the program.")
+        QMessageBox.information(
+            QWidget(),
+            "Updater",
+            "Update finished.\nPlease restart the program."
+        )
     sys.exit()
 
 
@@ -155,11 +173,20 @@ def finishing_the_update():
 parser = argparse.ArgumentParser(description='This is a simple Updater for Python programs.')
 parser.add_argument('--url', type=str, help='URL for downloading the archive with the update.')
 parser.add_argument('--archive_name', type=str, help='Name of the archive with the update')
-parser.add_argument('--ignore_files', metavar='file', type=str, nargs='+', help='File names that the program will '
-                                                                                'ignore when updating.')
-parser.add_argument('--open', type=str, help='The name of the file needed to open the application after the update. '
-                                             'Note that the file can be located either in the directory where the '
-                                             'Updater is located, or below.')
+parser.add_argument(
+    '--ignore_files',
+    metavar='file',
+    type=str,
+    nargs='+',
+    help='File names that the program will ignore when updating.'
+)
+parser.add_argument(
+    '--open',
+    type=str,
+    help='The name of the file needed to open the application after the update. '
+         'Note that the file can be located either in the directory where the '
+         'Updater is located, or below.'
+)
 args = parser.parse_args()
 
 # Variables
@@ -170,24 +197,26 @@ open_app = args.open
 
 if None not in (args.url, args.archive_name):
     # Creating window
-    root = tk.Tk()
-    root.title("Updater")
-    if platform.system() == 'Windows':
-        root.iconbitmap(os.path.dirname(os.path.realpath(__file__)) + '/icons/' + 'Updater.ico')
-    root.geometry('500x100')
-    root.resizable(False, False)
-    text = ttk.Label(text="Updating... Please, wait.")
-    text.pack(side='top', anchor='nw', padx=50, pady=10)
-    progress_bar = ttk.Progressbar(root, orient='horizontal', length=400, mode='determinate')
-    progress_bar.pack(side='top', pady=10)
+    app = QApplication(sys.argv)
+    window = QMainWindow()
+    window.setWindowTitle("Updater")
+    window.setFixedSize(500, 100)
+    central_widget = QWidget()
+    window.setCentralWidget(central_widget)
+    layout = QVBoxLayout(central_widget)
+    text_label = QLabel("Updating... Please, wait.")
+    layout.addWidget(text_label)
+    progress_bar = QProgressBar()
+    layout.addWidget(progress_bar)
+    window.show()
 
     # "Update" folder name
     update_folder_name = 'Update-' + str(random.randint(1000000, 10000000))
-    update_folder_path = root_path + '/' + update_folder_name
+    update_folder_path = os.path.join(root_path, update_folder_name)
     ignore_files = ignore_files + [update_folder_name]
 
     # Path to update archive
-    update_file_path = update_folder_path + '/' + archive_name
+    update_file_path = os.path.join(update_folder_path, archive_name)
 
     # Current executable file name
     executable_file_name = os.path.basename(sys.executable)
@@ -207,4 +236,5 @@ if None not in (args.url, args.archive_name):
     # Finish
     finishing_the_update()
 
-    root.mainloop()
+    app.exec()
+    sys.exit(app.exec())
