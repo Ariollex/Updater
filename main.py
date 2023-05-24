@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 
 # Version
 version = '1.0.1.0'
-is_debug = False
+is_debug = True
 
 # Base path
 if platform.system() == 'Darwin':
@@ -149,7 +149,7 @@ def finishing_the_update():
     text_label.setText("The update is complete.")
     if open_app is not None:
         if platform.system() == 'Darwin':
-            open_command = ['open', '-a', root_path + '/' + open_app]
+            open_command = ['open', '-a', open_app]
         else:
             open_command = ['./' + open_app]
         if is_debug:
@@ -184,9 +184,7 @@ parser.add_argument(
 parser.add_argument(
     '--open',
     type=str,
-    help='The name of the file needed to open the application after the update. '
-         'Note that the file can be located either in the directory where the '
-         'Updater is located, or below.'
+    help='The name of the file needed to open the application after the update.'
 )
 args = parser.parse_args()
 
