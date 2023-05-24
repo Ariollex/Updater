@@ -128,7 +128,7 @@ def download_update_file():
     text_label.setText("The update has been downloaded")
 
 
-def apply_update():
+def install_update():
     text_label.setText("Start of the update...")
     progress_bar.setValue(0)
     app.processEvents()
@@ -172,7 +172,8 @@ def finishing_the_update():
 # Getting arguments
 parser = argparse.ArgumentParser(description='This is a simple Updater for Python programs.')
 parser.add_argument('--url', type=str, help='URL for downloading the archive with the update.')
-parser.add_argument('--archive_name', type=str, help='Name of the archive with the update')
+parser.add_argument('--archive_name', type=str, help='Name of the archive with the update.')
+parser.add_argument('--path', type=str, help='Path to downloaded file.')
 parser.add_argument(
     '--ignore_files',
     metavar='file',
@@ -192,10 +193,11 @@ args = parser.parse_args()
 # Variables
 url = args.url
 archive_name = args.archive_name
+update_file_path = args.path
 ignore_files = [] + args.ignore_files if args.ignore_files is not None else []
 open_app = args.open
 
-if None not in (args.url, args.archive_name):
+if None not in (args.url, args.archive_name) or update_file_path is not None:
     # Creating window
     app = QApplication(sys.argv)
     window = QMainWindow()
@@ -215,8 +217,9 @@ if None not in (args.url, args.archive_name):
     update_folder_path = os.path.join(root_path, update_folder_name)
     ignore_files = ignore_files + [update_folder_name]
 
-    # Path to update archive
-    update_file_path = os.path.join(update_folder_path, archive_name)
+    if args.path is None:
+        # Path to update archive
+        update_file_path = os.path.join(update_folder_path, archive_name)
 
     # Current executable file name
     executable_file_name = os.path.basename(sys.executable)
@@ -227,11 +230,12 @@ if None not in (args.url, args.archive_name):
     # Prepare
     preparing_for_update()
 
-    # Download
-    download_update_file()
+    if args.path is None:
+        # Download
+        download_update_file()
 
     # Update
-    apply_update()
+    install_update()
 
     # Finish
     finishing_the_update()
